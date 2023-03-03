@@ -57,5 +57,28 @@ public class Application {
 		private Map<String, Object> params;
 		private int age;
 	}
+	
+	 private static void s(String id, String table, Map<String, Object> cols) {
+        var temp = new LinkedHashMap<String, Object>();
+        temp.put("id", id);
+        temp.putAll(cols);
+        cols = temp;
+        var colList = String.join(",", cols.keySet());
+        var valList = cols.keySet().stream().map(s -> "?").collect(Collectors.joining(","));
+        cols.remove("id");
+        var setList = cols.keySet().stream().map(o -> o + "=?").collect(Collectors.joining(", "));
+        PreparedStatement stmt = new PreparedStatement(
+                "INSERT INTO "+table+" ("+colList+") " +
+                   "VALUES ("+valList+") " +
+                   "ON CONFLICT (id) SET "+setList+" " +
+                   "WHERE id = "+id);
+        stmt.set(1, id);
+        int i = 2;
+        for (var v : cols.values()) {
+            stmt.set(i, v);
+            stmt.set(i+cols.size(), v);
+            i++;
+        }
+    }
 
 }
